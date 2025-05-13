@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mesegenerátor Demo</title>
+  <style>
+    body { font-family: sans-serif; margin: 1em; }
+    input, button { font-size: 1rem; padding: .5em; }
+    #output { margin-top: 1em; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Mesegenerátor</h1>
+  <p>Írd be, miről szóljon a mese:</p>
+  <input id="tema" type="text" placeholder="Pl. Egy bátor nyuszi kalandja" style="width: 100%" />
+  <p><button id="go">Mesét kérek!</button></p>
+  <div id="output"></div>
+
+  <script>
+    document.getElementById('go').addEventListener('click', async () => {
+      const tema = document.getElementById('tema').value.trim();
+      if (!tema) return alert('Kérlek, add meg a téma nevét!');
+      
+      document.getElementById('output').textContent = 'Generálás…';
+      
+      try {
+        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer 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'
+          },
+          body: JSON.stringify({
+            model: 'gpt-4',
+            messages: [{ role: 'user', content: `Írj egy rövid mesét erről: ${tema}` }],
+            temperature: 0.8,
+            max_tokens: 600
+          })
+        });
+        const { choices } = await resp.json();
+        document.getElementById('output').textContent = choices[0].message.content.trim();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('output').textContent = 'Hiba történt a generálás során.';
+      }
+    });
+  </script>
+</body>
+</html>
